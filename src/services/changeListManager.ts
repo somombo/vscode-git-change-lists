@@ -139,6 +139,11 @@ export class ChangeListManager implements vscode.Disposable {
    * Remove file mappings for files that are no longer modified
    */
   private async cleanupStaleFileMappings(): Promise<void> {
+    if (!this.gitService.hasRepository()) {
+      logger.debug('ChangeListManager: Skipping cleanup of stale mappings (no repository active)');
+      return;
+    }
+
     const modifiedFiles = await this.gitService.getModifiedFiles();
     const modifiedPaths = new Set(modifiedFiles.map((f) => f.uri.fsPath));
 

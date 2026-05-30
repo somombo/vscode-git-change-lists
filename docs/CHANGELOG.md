@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Features and improvements planned for future releases. See the [Roadmap](../README.md#roadmap) in the main README.
+### Fixed
+- Fixed extension activation deadlock caused by synchronously blocking on the Git extension initialization (#1).
+- Fixed potential data loss where change list file assignments were wiped on startup before the Git repository finished loading (#1).
+- Fixed packaging bug that excluded runtime dependencies, preventing the extension from activating (#1).
 
 ---
 

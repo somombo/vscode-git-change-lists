@@ -25,15 +25,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     const gitService = new GitService();
 
-    // Wait for Git extension to be ready
-    logger.debug('Initializing Git service...');
-    const gitReady = await gitService.initialize();
-    if (!gitReady) {
-      logger.warn('Git extension not available. Extension will activate when a repository is opened.');
-    } else {
-      logger.info('Git service initialized successfully');
-    }
-
     // Initialize change list manager with workspace state
     logger.debug('Initializing change list manager...');
     const changeListManager = new ChangeListManager(context.workspaceState, gitService);
@@ -170,6 +161,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       commitGuardService,
       treeDataProvider
     );
+
+    // Initialize Git service in the background so it doesn't block extension activation
+    logger.debug('Initializing Git service in the background...');
+    gitService.initialize().then(async (gitReady) => {
+      if (!gitReady) {
+        logger.warn('Git extension not available or failed to initialize.');
+      } else {
+        logger.info('Git service initialized successfully');
+        // Clean up stale file mappings now that Git service is available
+        await changeListManager.refresh();
+      }
+    }).catch((error) => {
+      logger.error('Failed to initialize Git service', error);
+    });
 
     logger.info('Git Change Lists extension activated successfully!');
   } catch (error) {
